@@ -92,10 +92,10 @@ export type StudentDocument = Student & Document;
 @Schema( { timestamps: true } )
 export class Student {
     @Prop( { required: true } )
-    name: string;
+    name!: string;
     
     @Prop( { required: true } )
-    age: number;
+    age!: number;
 
     @Prop()
     email?: string;
