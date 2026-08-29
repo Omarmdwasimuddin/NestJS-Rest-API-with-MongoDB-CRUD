@@ -64,6 +64,19 @@ export class AppModule {}
 ---
 
 
+#### Create module, service, controller
+```bash
+nest g module students
+```
+```bash
+nest g service students
+```
+```bash
+nest g controller students
+```
+---
+
+
 
 
 
