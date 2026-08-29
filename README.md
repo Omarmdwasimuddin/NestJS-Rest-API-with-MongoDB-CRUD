@@ -137,25 +137,38 @@ import { Model } from 'mongoose';
 export class StudentsService {
     constructor(
         @InjectModel(Student.name) private studentModel: Model<StudentDocument>
-    ) {}
+    ){}
 
-    async createStudent(data: Partial<Student>): Promise<Student> {
+    async createStudent(data: Partial<Student>): Promise<Student>{
         const newStudent = new this.studentModel(data);
         return newStudent.save();
     }
 
-    async getAllStudents(): Promise<Student[]> {
+    async getAllStudent(): Promise<Student[]>{
         return this.studentModel.find().exec();
     }
 
-    async getStudentById(id: string): Promise<Student | null> {
+    async getStudentById(id: string): Promise<Student | null>{
         return this.studentModel.findById(id).exec();
     }
 
-    async updateStudent(id: string, data: Partial<Student>): Promise<Student | null> {
-        return this.studentModel.findByIdAndUpdate(id, data, { new: true }).exec();
+    async upateStudent(id: string, data: Partial<Student>): Promise<Student | null>{
+        //return this.studentModel.findByIdAndUpdate(id, data, { new: true }).exec();
+        const update = await this.studentModel.findByIdAndUpdate(id, {
+            name: data.name ?? null,
+            age: data.age ?? null,
+            email: data.email ?? null,
+        }, { overwrite: true, new: true });
+        return update;
     }
 
+    async patchStudent(id: string, data: Partial<Student>): Promise<Student | null>{
+        return this.studentModel.findByIdAndUpdate(id, { $set: data }, { new: true }).exec();
+    }
+
+    async deleteStudent(id: string): Promise<Student | null>{
+        return this.studentModel.findByIdAndDelete(id).exec();
+    }
 }
 ```
 ---
@@ -163,32 +176,42 @@ export class StudentsService {
 
 #### `students.controller.ts`
 ```bash
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
-import { StudentsService } from './students.service';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { StudentsService } from './students.service'
 import { Student } from './students.schema';
 
 @Controller('students')
 export class StudentsController {
-    constructor(private readonly studentsService: StudentsService) {}
+    constructor(private readonly studentService: StudentsService){}
 
     @Post()
-    async createStudent(@Body() data: Partial<Student>) {
-        return this.studentsService.createStudent(data);
+    async createStudent(@Body() data: Partial<Student>){
+        return this.studentService.createStudent(data);
     }
 
     @Get()
-    async getAllStudents() {
-        return this.studentsService.getAllStudents();
+    async getAllStudent(){
+        return this.studentService.getAllStudent();
     }
 
     @Get(':id')
-    async getStudentById(@Param('id') id: string) {
-        return this.studentsService.getStudentById(id);
+    async getStudentById(@Param('id') id: string){
+        return this.studentService.getStudentById(id);
     }
 
     @Put(':id')
-    async updateStudent(@Param('id') id: string, @Body() data: Partial<Student>) {
-        return this.studentsService.updateStudent(id, data);
+    async updateStudent(@Param('id') id: string, @Body() data: Partial<Student>){
+        return this.studentService.upateStudent(id, data);
+    }
+
+    @Patch(':id')
+    async patchStudent(@Param('id') id: string, @Body() data: Partial<Student> ){
+        return this.studentService.patchStudent(id, data);
+    }
+
+    @Delete(':id')
+    async deleteStudent(@Param('id') id: string){
+        return this.studentService.deleteStudent(id);
     }
 
 }
