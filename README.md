@@ -126,7 +126,42 @@ export class StudentsModule {}
 
 
 
+#### `students.service.ts`
+```bash
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Student, StudentDocument } from './students.schema';
+import { Model } from 'mongoose';
+
+@Injectable()
+export class StudentsService {
+    constructor(
+        @InjectModel(Student.name) private studentModel: Model<StudentDocument>
+    ) {}
+
+    async createStudent(data: Partial<Student>): Promise<Student> {
+        const newStudent = new this.studentModel(data);
+        return newStudent.save();
+    }
+}
+```
+---
 
 
+#### `students.controller.ts`
+```bash
+import { Body, Controller, Post } from '@nestjs/common';
+import { StudentsService } from './students.service';
+import { Student } from './students.schema';
 
+@Controller('students')
+export class StudentsController {
+    constructor(private readonly studentsService: StudentsService) {}
 
+    @Post()
+    async createStudent(@Body() data: Partial<Student>) {
+        return this.studentsService.createStudent(data);
+    }
+}
+```
+---
