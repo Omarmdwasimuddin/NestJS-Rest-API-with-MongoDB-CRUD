@@ -1,1 +1,12 @@
-# NestJS-Rest-API-with-MongoDB-CRUD
+## Heading...
+
+
+#### Project Create 
+> powershell e daw
+```bash
+nest new nest-app
+```
+```bash
+cd nest-app
+```
+---
