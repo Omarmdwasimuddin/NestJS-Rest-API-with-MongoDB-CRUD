@@ -79,7 +79,9 @@ nest g controller students
 
 >#### manualy file banao students.schema.ts
 <img width="246" height="67" alt="image" src="https://github.com/user-attachments/assets/224defc3-7994-46b4-b308-f5bb114e320d" />
+
 ##
+
 #### `students.schema.ts`
 ```bash
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
