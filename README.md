@@ -1,4 +1,4 @@
-## NestJS-Rest-API-with-MongoDB-CRUD
+## NestJS REST API with MongoDB CRUD
 
 
 #### Project Create 
