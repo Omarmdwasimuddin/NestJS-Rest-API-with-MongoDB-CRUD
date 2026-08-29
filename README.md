@@ -43,8 +43,8 @@ npm i @nestjs/mongoose mongoose
 ---
 
 
-##### Note: app.module.ts file e add koro- ConfigModule.forRoot(),
-##### MongooseModule.forRoot(process.env.MONGODB_URI!)
+>##### Note: app.module.ts file e add koro- ConfigModule.forRoot(),
+>##### MongooseModule.forRoot(process.env.MONGODB_URI!)
 ##
 #### `app.module.ts`
 ```bash
