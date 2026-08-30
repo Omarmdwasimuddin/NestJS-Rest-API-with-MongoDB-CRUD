@@ -1,53 +1,67 @@
-## NestJS REST API with MongoDB CRUD
+# NestJS REST API with MongoDB CRUD 
 
 
-#### Project Create 
-> powershell e daw
+এখানে দেখানো হবে কীভাবে NestJS দিয়ে MongoDB-এর সাথে connect করে একটা পুরোপুরি কাজ করা **CRUD REST API** (Create, Read, Update, Delete) বানানো যায় — `students` নামের একটা resource দিয়ে উদাহরণ হিসেবে।
+
+---
+
+## ধাপ ১: Project তৈরি করা
+
+PowerShell-এ (বা যেকোনো terminal-এ) দাও:
+
 ```bash
 nest new nest-app
 ```
+
 ```bash
 cd nest-app
 ```
+
 ---
 
+## ধাপ ২: `@nestjs/config` Install করা
 
-#### install @nestjs/config
+Environment variable (যেমন `.env` file) ব্যবহার করতে হলে `@nestjs/config` package লাগবে:
+
 ```bash
 npm i @nestjs/config
 ```
+
 ---
 
->#### Project Root e .env file banaw.
----
+## ধাপ ৩: `.env` File বানানো
 
+Project-এর root-এ একটা `.env` file বানাও।
 
->#### Note: browse- https://www.mongodb.com/cloud/atlas/register account create koro, clusters create koro
->#### .env te database connect koro. [MongoDB Atlas Setup](https://github.com/Omarmdwasimuddin/mongodb-atlas)
----
+> **নোট:** [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register)-এ গিয়ে একটা account বানাও, cluster তৈরি করো, এরপর সেই cluster থেকে connection string নিয়ে `.env`-এ database connect করো। বিস্তারিত ধাপে ধাপে setup দেখতে চাইলে এই গাইড দেখো: [MongoDB Atlas Setup](https://github.com/Omarmdwasimuddin/mongodb-atlas)।
 
+### `example.env`
 
-#### `example.env`
 ```bash
 MONGODB_USERNAME=""
 MONGODB_PASSWORD=""
 MONGODB_URI=""
 ```
+
 ---
 
+## ধাপ ৪: Mongoose Install করা
 
-#### Install mongoose
 ```bash
 npm i @nestjs/mongoose mongoose
 ```
+
 ---
 
+## ধাপ ৫: `app.module.ts` Setup করা
 
->##### Note: app.module.ts file e add koro- ConfigModule.forRoot(),
->##### MongooseModule.forRoot(process.env.MONGODB_URI!)
-##
-#### `app.module.ts`
-```bash
+> **নোট:** `app.module.ts`-এ যোগ করতে হবে:
+> - `ConfigModule.forRoot()`
+> - `MongooseModule.forRoot(process.env.MONGODB_URI!)`
+
+### `app.module.ts`
+
+```ts
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -61,29 +75,36 @@ import { MongooseModule } from '@nestjs/mongoose';
 })
 export class AppModule {}
 ```
+
 ---
 
+## ধাপ ৬: Module, Service, Controller তৈরি করা
 
-#### Create module, service, controller
 ```bash
 nest g module students
 ```
+
 ```bash
 nest g service students
 ```
+
 ```bash
 nest g controller students
 ```
+
+এই তিনটা command চালালে `students` নামের একটা folder তৈরি হবে, যার ভিতরে module, service, আর controller file automatic জেনারেট হয়ে যাবে।
+
 ---
 
+## ধাপ ৭: Schema File তৈরি করা
 
->#### manualy file banao students.schema.ts
-<img width="246" height="67" alt="image" src="https://github.com/user-attachments/assets/224defc3-7994-46b4-b308-f5bb114e320d" />
+`students.schema.ts` নামের একটা file manually বানাতে হবে — CLI দিয়ে এটা automatic জেনারেট হয় না।
 
-##
+![students.schema.ts ফাইল](https://github.com/user-attachments/assets/224defc3-7994-46b4-b308-f5bb114e320d)
 
-#### `students.schema.ts`
-```bash
+### `students.schema.ts`
+
+```ts
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 
@@ -103,12 +124,20 @@ export class Student {
 
 export const StudentSchema = SchemaFactory.createForClass( Student );
 ```
+
+**এখানে কী হচ্ছে:**
+- `@Schema({ timestamps: true })` — `timestamps: true` দিলে Mongoose automatic `createdAt` আর `updatedAt` field যোগ করে দেয়
+- `name` আর `age` — `required: true` দেওয়া, মানে এই দুইটা field ছাড়া document save হবে না
+- `email` — optional (`?` চিহ্ন দিয়ে বোঝানো হয়েছে, `required` দেওয়া হয়নি)
+- `StudentDocument` type — `Student` class আর Mongoose-এর `Document` — দুটো মিলিয়ে বানানো হয়েছে, যাতে service-এ পুরো Mongoose document-এর সব method (`.save()`, `._id` ইত্যাদি) পাওয়া যায়
+
 ---
 
+## ধাপ ৮: Module Setup করা
 
+### `students.module.ts`
 
-#### `students.module.ts`
-```bash
+```ts
 import { Module } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { StudentsController } from './students.controller';
@@ -122,12 +151,16 @@ import { Student, StudentSchema } from './students.schema';
 })
 export class StudentsModule {}
 ```
+
+এখানে `MongooseModule.forFeature()` দিয়ে `Student` model-টা এই module-এর scope-এ register করা হয়েছে — এর ফলে `StudentsService`-এ `@InjectModel()` দিয়ে এই model inject করা সম্ভব হবে।
+
 ---
 
+## ধাপ ৯: Service লেখা (Business Logic)
 
+### `students.service.ts`
 
-#### `students.service.ts`
-```bash
+```ts
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Student, StudentDocument } from './students.schema';
@@ -171,11 +204,27 @@ export class StudentsService {
     }
 }
 ```
+
+### প্রতিটা method কী করছে
+
+| Method | কাজ |
+|---|---|
+| `createStudent()` | নতুন `student` document বানিয়ে database-এ save করে |
+| `getAllStudent()` | সবগুলো student একসাথে fetch করে |
+| `getStudentById()` | নির্দিষ্ট `id` দিয়ে একজন student খুঁজে বের করে |
+| `upateStudent()` | **PUT-স্টাইল update** — পুরো document পুরোপুরি নতুন data দিয়ে replace করে (`overwrite: true`); কোনো field না দিলে সেটা `null` হয়ে যাবে |
+| `patchStudent()` | **PATCH-স্টাইল update** — `$set` দিয়ে শুধু যেসব field পাঠানো হয়েছে সেগুলোই update করে, বাকিগুলো অপরিবর্তিত থাকে |
+| `deleteStudent()` | নির্দিষ্ট `id`-এর student মুছে ফেলে |
+
+> **PUT vs PATCH-এর পার্থক্য মনে রাখার সহজ উপায়:** PUT মানে পুরো object replace, PATCH মানে শুধু যা পাঠানো হয়েছে তা আপডেট। এই জন্যই `upateStudent()`-এ `overwrite: true` ব্যবহার করা হয়েছে (পুরো document বদলে যায়), আর `patchStudent()`-এ `$set` ব্যবহার করা হয়েছে (নির্দিষ্ট field-ই বদলায়)।
+
 ---
 
+## ধাপ ১০: Controller লেখা (Route Handler)
 
-#### `students.controller.ts`
-```bash
+### `students.controller.ts`
+
+```ts
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { StudentsService } from './students.service'
 import { Student } from './students.schema';
@@ -216,4 +265,18 @@ export class StudentsController {
 
 }
 ```
+
+### Route-গুলো একনজরে
+
+| HTTP Method | Route | কাজ |
+|---|---|---|
+| `POST` | `/students` | নতুন student তৈরি |
+| `GET` | `/students` | সবগুলো student দেখা |
+| `GET` | `/students/:id` | নির্দিষ্ট student দেখা |
+| `PUT` | `/students/:id` | পুরো student document replace |
+| `PATCH` | `/students/:id` | নির্দিষ্ট field আপডেট |
+| `DELETE` | `/students/:id` | student মুছে ফেলা |
+
+`@Controller('students')` দিয়ে বলে দেওয়া হয়েছে এই controller-এর সবগুলো route `/students` prefix দিয়ে শুরু হবে। `@Body()` দিয়ে request body থেকে data নেওয়া হয়, `@Param('id')` দিয়ে URL-এর `:id` অংশটা নেওয়া হয়।
+
 ---
